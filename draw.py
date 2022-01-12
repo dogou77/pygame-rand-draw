@@ -2,6 +2,8 @@ import pygame
 import random
 import math
 import sys
+
+from pygame.constants import KEYDOWN
   
 pygame.init()
 
@@ -102,7 +104,17 @@ def draw_centered_text(screen, text_font, text_str, text_color, position_x, posi
     # renders the text at the center of the position provided
     screen.blit(text , (position_x - (text_size[0] / 2), position_y - (text_size[1] / 2)))
 
+def commands(event, toggles, screen):
+    if pygame.key.get_focused():
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_F12:
+                pygame.image.save(screen, "image.png")
+            if event.key == pygame.K_ESCAPE:
+                toggles["running"] = False
+            if event.key == pygame.K_SPACE:
+                toggles["render"] = not toggles["render"]
 
+    return toggles
 
 # main menu screen
 def screen_menu_main(screen):
@@ -131,7 +143,7 @@ def screen_menu_main(screen):
             if button_draw_point.get_state(mouse):
                 state_current = "PointDrawMenu"
             if button_draw_lines.get_state(mouse):
-                state_current = "DrawLinesCenter"
+                state_current = "DrawLinesMenu"
             if button_quit.get_state(mouse):
                 pygame.quit()
     # fills the screen with a color
@@ -139,7 +151,7 @@ def screen_menu_main(screen):
 
     # renders the buttons
     button_draw_point.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font, 'Point Drawer', WHITE)
-    button_draw_lines.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font, 'Lines (Center)', WHITE)
+    button_draw_lines.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font, 'Lines', WHITE)
     button_quit.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font, 'Quit', WHITE)
 
     # updates the frames of the game
@@ -182,8 +194,9 @@ def screen_menu_draw_pointer(screen):
     button_next = Button(550, 800, 400, 100)
 
     # initialize fonts
-    font_title = pygame.font.SysFont('Arial', 50)
+    font_title     = pygame.font.SysFont('Arial', 50)
     font_check_box = pygame.font.SysFont('Arial', 40)
+    font_instruct  = pygame.font.SysFont('Arial', 20)
 
 
     while running:
@@ -236,6 +249,7 @@ def screen_menu_draw_pointer(screen):
 
         # draw all the text
         draw_centered_text(screen, font_title, "Point Drawer Options", WHITE, 500, 50)
+        draw_centered_text(screen, font_instruct, "Commands: Escape - Exits | F12 - Saves Image | Space - Toggle Render", WHITE, 500, 100)
         draw_centered_text(screen, font_check_box, "X-Axis Symmetry", WHITE, 350, 150)
         draw_centered_text(screen, font_check_box, "Y-Axis Symmetry", WHITE, 650, 150)
         draw_centered_text(screen, font_check_box, "Color Mode A", WHITE, 350, 350)
@@ -270,15 +284,12 @@ def screen_draw_pointer(pixel, screen, info):
     g = 125
     b = 125
 
-    running = True
+    toggles = {
+        "running" : True,
+        "render"  : True,
+    }
 
-    while running:
-
-        if pygame.key.get_focused():
-            if pygame.key.get_pressed()[pygame.K_F12]:
-                pygame.image.save(screen, "image.png")
-            if pygame.key.get_pressed()[pygame.K_ESCAPE]:
-                running = False
+    while toggles["running"]:
         # if the user selected color mode a in the previous screen
         if info["color_a"]:
             # generate a random number from 0 to 2, this selects what rgb value is going to be modified
@@ -373,6 +384,7 @@ def screen_draw_pointer(pixel, screen, info):
             # window close
             if ev.type == pygame.QUIT:
                 pygame.quit()
+            toggles = commands(ev, toggles, screen)
 
         # if the pixel the pointer is over is not white, then make the color white
         if info["overwrite"]:
@@ -389,8 +401,9 @@ def screen_draw_pointer(pixel, screen, info):
         # symmetry over x & y axis
         if info["sym_x"] and info["sym_y"]:
             screen.fill(color, ([-pixel[0]+1000, -pixel[1]+1000], (1, 1)))
-        # update display
-        pygame.display.update()
+        # update display if space bar is pressed
+        if toggles["render"]:
+            pygame.display.update()
     state_current = "MainMenu"
     pixel[0] = 500
     pixel[1] = 500
@@ -398,21 +411,62 @@ def screen_draw_pointer(pixel, screen, info):
     
 
 
+def screen_menu_draw_lines(screen):
+    global state_current
+    screen.fill(PURPLE)
+    running = True
 
-def screen_draw_lines_center(screen):
-    global run_once
+    # info is the variable that is returned
+    info = {
+        "radius"    : "",
+        "draw_from" : "",
+        "draw_to"   : "",
+    }
 
-    # fills the screen once
-    if run_once == False:
-        screen.fill(WHITE)
-        run_once = True
+    # initalize back and forward buttons
+    button_back = Button(50, 800, 400, 100)
+    button_next = Button(550, 800, 400, 100)
 
+    # initialize fonts
+    font_title     = pygame.font.SysFont('Arial', 50)
+
+    while running:
+        mouse = pygame.mouse.get_pos()
+
+        # pygame event queue
+        for ev in pygame.event.get():
+            # window is closed
+            if ev.type == pygame.QUIT:
+                pygame.quit()
+            # checks if a mouse is clicked
+            if ev.type == pygame.MOUSEBUTTONDOWN:
+                # button events
+                if button_back.get_state(mouse):
+                    state_current = "MainMenu"
+                    running = False
+                if button_next.get_state(mouse):
+                    state_current = "DrawLines"
+                    running = False
+        
+        button_back.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font_title, "Back", WHITE)
+        button_next.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font_title, "Next", WHITE)
+        pygame.display.update()
+    return info
+
+
+def screen_draw_lines(screen, info):
+    global state_current
+    screen.fill(WHITE)
+    running = True
     radius = 500
-
-    # generate a random number representing a point on the edge of a circle
-    randNum = random.random()*(2*math.pi)
-    # convert the polar coordinates to rectangular to draw a line
-    pygame.draw.line(screen, BLACK, (500, 500), ((radius*math.cos(randNum))+500, (radius*math.sin(randNum))+500))
+    while running:
+        running = commands(running)
+        # generate a random number representing a point on the edge of a circle
+        randNum = random.random()*(2*math.pi)
+        # convert the polar coordinates to rectangular to draw a line
+        pygame.draw.line(screen, BLACK, (500, 500), ((radius*math.cos(randNum))+500, (radius*math.sin(randNum))+500))
+        pygame.display.update()
+    state_current = "MainMenu"
 
 
 
@@ -420,7 +474,9 @@ def screen_draw_lines_center(screen):
 RES = (1000, 1000)
 
 # colors
+RED          = (255,   0,   0)
 GREEN        = (  0, 255,   0)
+BLUE         = (  0,   0, 255)
 BLACK        = (  0,   0,   0)
 WHITE        = (255, 255, 255)
 PURPLE       = ( 60,  25,  60)
@@ -429,7 +485,6 @@ BUTTON_DARK  = (100, 100, 100)
 
 # global variables
 state_current = "MainMenu"
-run_once = False
 
 # variables
 pixel = [500, 500]
@@ -448,5 +503,7 @@ while True:
         point_draw_info = screen_menu_draw_pointer(screen)
     if state_current == "PointDraw":
         pixel = screen_draw_pointer(pixel, screen, point_draw_info)
-    if state_current == "DrawLinesCenter":
-        screen_draw_lines_center(screen)
+    if state_current == "DrawLinesMenu":
+        line_draw_info = screen_menu_draw_lines(screen)
+    if state_current == "DrawLines":
+        screen_draw_lines(screen, line_draw_info)
