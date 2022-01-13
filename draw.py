@@ -1,101 +1,9 @@
 import pygame
 import random
 import math
-import sys
-
-from pygame.constants import KEYDOWN
+import pg_ui_inputs as pguiin
   
 pygame.init()
-
-
-
-# buttons are drawn as a rectangle from (position_x, position_y) to (position_x+size_x, postion_y+size_y) and return a true or false when pressed
-class Button:
-    # initializes button with 4 parameters
-    def __init__(self, position_x, position_y, size_x, size_y):
-        self.position        = [position_x, position_y]
-        self.size            = [size_x, size_y]
-        self.position_end    = [position_x + size_x, position_y + size_y] # gets the lower right hand corner of the button
-        self.position_center = [((position_x * 2) + size_x) / 2, ((position_y * 2) + size_y) / 2] # gets the center of the button with midpoint formula
-
-    # renders the button
-    def render(self, screen, mouse, color_hover, color_neut, text_font, text_str, text_color):
-        # if the mouse is over the button, draw a rectangle over it, if not then draw the neutral rectangle
-        if self.position[0] <= mouse[0] <= self.position_end[0] and self.position[1] <= mouse[1] <= self.position_end[1]:
-            pygame.draw.rect(screen, color_hover, [self.position[0], self.position[1], self.size[0], self.size[1]])
-        else:
-            pygame.draw.rect(screen, color_neut, [self.position[0], self.position[1], self.size[0], self.size[1]])
-        # gets the text size for calculating where to put it
-        text_size = text_font.size(text_str)
-        text = text_font.render(text_str, True , text_color)
-        # renders the text at the center of the button
-        screen.blit(text , (self.position_center[0] - (text_size[0] / 2), self.position_center[1] - (text_size[1] / 2)))
-
-    # gets the state of the button, if the mouse is in the button, then return true
-    def get_state(self, mouse):
-        if self.position[0] <= mouse[0] <= self.position_end[0] and self.position[1] <= mouse[1] <= self.position_end[1]:
-            return True
-        else:
-            return False
-
-
-
-# check boxes are drawn as a rectangle from (position_x, position_y) to (position_x+size_x, postion_y+size_y) and store a state based on if they have been toggled
-class CheckBox:
-    # initializes the check box based on 6 parameters
-    def __init__(self, default_state, position_x, position_y, size_x, size_y, check_margin):
-        self.state           = default_state
-        self.position        = [position_x, position_y]
-        self.size            = [size_x, size_y]
-        self.position_end    = [position_x + size_x, position_y + size_y] # gets the lower right hand corner of the checkbox
-        self.position_center = [((position_x * 2) + size_x) / 2, ((position_y * 2) + size_y) / 2] # gets the center of the checkbox with midpoint formula
-        self.check_margin    = check_margin
-        
-    # renders the check box
-    def render(self, screen, mouse, color_hover, color_neut, color_confirm):
-        # draw the outline of the check box
-        pygame.draw.rect(screen, color_neut, [self.position[0], self.position[1], self.size[0], self.size[1]])
-
-        # if the mouse is over the checkbox, draw a rectangle in it, if the state is true, draw a green rectangle in it
-        if self.state:
-            pygame.draw.rect(screen, color_confirm, [self.position[0] + self.check_margin, self.position[1] + self.check_margin, self.size[0] - (self.check_margin * 2), self.size[1] - (self.check_margin * 2)])
-        if self.position[0] <= mouse[0] <= self.position_end[0] and self.position[1] <= mouse[1] <= self.position_end[1]:
-            pygame.draw.rect(screen, color_hover, [self.position[0] + self.check_margin, self.position[1] + self.check_margin, self.size[0] - (self.check_margin * 2), self.size[1] - (self.check_margin * 2)])
-
-    # toggles the check boxes state if it is in the mouse position
-    def toggle(self, mouse):
-        if self.position[0] <= mouse[0] <= self.position_end[0] and self.position[1] <= mouse[1] <= self.position_end[1]:
-            self.state = not self.state
-
-
-
-# radio buttons are drawn as circles from the center of (position_x, position_y) with a radius, work just like check boxes with a state
-class RadioButton:
-    # initializes the radio button based on 5 parameters
-    def __init__(self, default_state, position_x, position_y, radius, confirm_margin):
-        self.state          = default_state
-        self.position       = [position_x, position_y]
-        self.radius         = radius
-        self.confirm_margin = confirm_margin
-        self.collision_pos  = [position_x - radius, position_y - radius, position_x + radius, position_y + radius]
-
-
-    def render(self, screen, mouse, color_hover, color_neut, color_confirm):
-        # draw the outline of the radio button
-        pygame.draw.circle(screen, color_neut, [self.position[0], self.position[1]], self.radius)
-
-        # if the mouse is over the radio button, draw a circle in it, if the state is true, draw a green circle in it
-        if self.state:
-            pygame.draw.circle(screen, color_confirm, [self.position[0], self.position[1]], self.radius - self.confirm_margin)
-        if self.collision_pos[0] <= mouse[0] <= self.collision_pos[2] and self.collision_pos[1] <= mouse[1] <= self.collision_pos[3]:
-            pygame.draw.circle(screen, color_hover, [self.position[0], self.position[1]], self.radius - self.confirm_margin)
-
-    # toggles the radio button state
-    def toggle(self, mouse):
-        if self.collision_pos[0] <= mouse[0] <= self.collision_pos[2] and self.collision_pos[1] <= mouse[1] <= self.collision_pos[3]:
-            self.state = not self.state
-
-
 
 # draws text centered at the specified point
 def draw_centered_text(screen, text_font, text_str, text_color, position_x, position_y):
@@ -119,43 +27,46 @@ def commands(event, toggles, screen):
 # main menu screen
 def screen_menu_main(screen):
     global state_current
-    global run_once
-    run_once = False
 
-    font = pygame.font.SysFont('Arial',35)
+    running = True
+
+    # fonts
+    font_button = pygame.font.SysFont('Arial', 35)
+    font_menu   = pygame.font.SysFont('Arial', 50)
 
     # buttons
-    button_draw_point = Button(50, 50, 500, 100)
-    button_draw_lines = Button(50, 200, 500, 100)
-    button_quit       = Button(50, 800, 500, 100)
-
-    # gets the position of the mouse as a vector
-    mouse = pygame.mouse.get_pos()
+    button_draw_point = pguiin.Button(500, 200, 500, 100, BUTTON_DARK, font_button, "Pointer Drawer", WHITE, True)
+    button_draw_lines = pguiin.Button(500, 320, 500, 100, BUTTON_DARK, font_button, "Line Drawer", WHITE, True)
+    button_quit       = pguiin.Button(500, 900, 500, 100, BUTTON_DARK, font_button, "Quit", WHITE, True)
 
     # pygame event queue
-    for ev in pygame.event.get():
-        # window is closed
-        if ev.type == pygame.QUIT:
-            pygame.quit()
-        #checks if a mouse is clicked
-        if ev.type == pygame.MOUSEBUTTONDOWN:
-            # gets the states of multiple buttons, if the mouse was in them when clicked, then go to next state
-            if button_draw_point.get_state(mouse):
-                state_current = "PointDrawMenu"
-            if button_draw_lines.get_state(mouse):
-                state_current = "DrawLinesMenu"
-            if button_quit.get_state(mouse):
+    while running:
+
+        for ev in pygame.event.get():
+            # window is closed
+            if ev.type == pygame.QUIT or button_quit.get_state(ev):
                 pygame.quit()
-    # fills the screen with a color
-    screen.fill(PURPLE)
+    
+            if button_draw_point.get_state(ev):
+                state_current = "PointDrawMenu"
+                running = False
+            if button_draw_lines.get_state(ev):
+                state_current = "LineDrawMenu"
+                running = False
 
-    # renders the buttons
-    button_draw_point.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font, 'Point Drawer', WHITE)
-    button_draw_lines.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font, 'Lines', WHITE)
-    button_quit.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font, 'Quit', WHITE)
+        # fills the screen with a color
+        screen.fill(PURPLE)
 
-    # updates the frames of the game
-    pygame.display.update()
+        # renders the text
+        draw_centered_text(screen, font_menu, "Title", WHITE, 500, 50)
+
+        # renders the buttons
+        button_draw_point.render(screen)
+        button_draw_lines.render(screen)
+        button_quit.render(screen)
+
+        # updates the frames of the game
+        pygame.display.update()
 
 
 
@@ -165,6 +76,7 @@ def screen_menu_draw_pointer(screen):
     global state_current
 
     running = True
+
     # info is the variable that is returned
     info = {
         "sym_x"    : False,
@@ -177,27 +89,26 @@ def screen_menu_draw_pointer(screen):
     # initializes a list that is supposed to contain multiple radio buttons so that two are not active at once
     radio_buttons = []
 
+    # initialize fonts
+    font_title     = pygame.font.SysFont('Arial', 50)
+    font_label = pygame.font.SysFont('Arial', 35)
+    font_instruct  = pygame.font.SysFont('Arial', 20)
+
     # initialize check boxes
-    check_box_sym_x     = CheckBox(False, 300, 200, 100, 100, 10)
-    check_box_sym_y     = CheckBox(False, 600, 200, 100, 100, 10)
-    check_box_overwrite = CheckBox(False, 300, 600, 100, 100, 10)
-    check_box_borders   = CheckBox(False, 600, 600, 100, 100, 10)
+    check_box_sym_x     = pguiin.CheckBox(False, 300, 200, 100, 100, 10)
+    check_box_sym_y     = pguiin.CheckBox(False, 600, 200, 100, 100, 10)
+    check_box_overwrite = pguiin.CheckBox(False, 300, 600, 100, 100, 10)
+    check_box_borders   = pguiin.CheckBox(False, 600, 600, 100, 100, 10)
 
     # initialize radio buttons and add them to the radio_button list
-    radio_color_a = RadioButton(False, 350, 450, 50, 10)
-    radio_color_b = RadioButton(False, 650, 450, 50, 10)
+    radio_color_a = pguiin.RadioButton(False, 350, 450, 50, 10)
+    radio_color_b = pguiin.RadioButton(False, 650, 450, 50, 10)
     radio_buttons.append(radio_color_a)
     radio_buttons.append(radio_color_b)
 
     # initalize back and forward buttons
-    button_back = Button(50, 800, 400, 100)
-    button_next = Button(550, 800, 400, 100)
-
-    # initialize fonts
-    font_title     = pygame.font.SysFont('Arial', 50)
-    font_check_box = pygame.font.SysFont('Arial', 40)
-    font_instruct  = pygame.font.SysFont('Arial', 20)
-
+    button_back = pguiin.Button(250, 900, 400, 100, BUTTON_DARK, font_label, "Back", WHITE, True)
+    button_next = pguiin.Button(750, 900, 400, 100, BUTTON_DARK, font_label, "Next", WHITE, True)
 
     while running:
         mouse = pygame.mouse.get_pos()
@@ -207,6 +118,15 @@ def screen_menu_draw_pointer(screen):
             # window is closed
             if ev.type == pygame.QUIT:
                 pygame.quit()
+            
+            # gets the states of the back and next buttons then sets a state and exits the loop
+            if button_back.get_state(ev):
+                state_current = "MainMenu"
+                running = False
+            if button_next.get_state(ev):
+                state_current = "PointDraw"
+                running = False
+            
             # checks if a mouse is clicked
             if ev.type == pygame.MOUSEBUTTONDOWN:
                 # toggles the check boxes if the mouse is in their area
@@ -223,14 +143,6 @@ def screen_menu_draw_pointer(screen):
                             if rad != radio:
                                 rad.state = False
 
-                # gets the states of the back and next buttons then sets a state and exits the loop
-                if button_back.get_state(mouse):
-                    state_current = "MainMenu"
-                    running = False
-                if button_next.get_state(mouse):
-                    state_current = "PointDraw"
-                    running = False
-
         screen.fill(PURPLE)
 
         # render the check boxes
@@ -244,18 +156,18 @@ def screen_menu_draw_pointer(screen):
         radio_color_b.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, GREEN)
 
         # render the buttons
-        button_back.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font_title, "Back", WHITE)
-        button_next.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font_title, "Next", WHITE)
+        button_back.render(screen)
+        button_next.render(screen)
 
         # draw all the text
         draw_centered_text(screen, font_title, "Point Drawer Options", WHITE, 500, 50)
         draw_centered_text(screen, font_instruct, "Commands: Escape - Exits | F12 - Saves Image | Space - Toggle Render", WHITE, 500, 100)
-        draw_centered_text(screen, font_check_box, "X-Axis Symmetry", WHITE, 350, 150)
-        draw_centered_text(screen, font_check_box, "Y-Axis Symmetry", WHITE, 650, 150)
-        draw_centered_text(screen, font_check_box, "Color Mode A", WHITE, 350, 350)
-        draw_centered_text(screen, font_check_box, "Color Mode B", WHITE, 650, 350)
-        draw_centered_text(screen, font_check_box, "Overwrite", WHITE, 350, 550)
-        draw_centered_text(screen, font_check_box, "Borders", WHITE, 650, 550)
+        draw_centered_text(screen, font_label, "X-Axis Symmetry", WHITE, 350, 150)
+        draw_centered_text(screen, font_label, "Y-Axis Symmetry", WHITE, 650, 150)
+        draw_centered_text(screen, font_label, "Color Mode A", WHITE, 350, 350)
+        draw_centered_text(screen, font_label, "Color Mode B", WHITE, 650, 350)
+        draw_centered_text(screen, font_label, "Overwrite", WHITE, 350, 550)
+        draw_centered_text(screen, font_label, "Borders", WHITE, 650, 550)
 
         # updates the frames of the game
         pygame.display.update()
@@ -404,6 +316,7 @@ def screen_draw_pointer(pixel, screen, info):
         # update display if space bar is pressed
         if toggles["render"]:
             pygame.display.update()
+
     state_current = "MainMenu"
     pixel[0] = 500
     pixel[1] = 500
@@ -413,7 +326,9 @@ def screen_draw_pointer(pixel, screen, info):
 
 def screen_menu_draw_lines(screen):
     global state_current
+
     screen.fill(PURPLE)
+
     running = True
 
     # info is the variable that is returned
@@ -423,12 +338,16 @@ def screen_menu_draw_lines(screen):
         "draw_to"   : "",
     }
 
-    # initalize back and forward buttons
-    button_back = Button(50, 800, 400, 100)
-    button_next = Button(550, 800, 400, 100)
+    # initialize back and forward buttons
+    button_back = pguiin.Button(50, 800, 400, 100)
+    button_next = pguiin.Button(550, 800, 400, 100)
+
+    # initialize text boxes
+    text_in_radius = pguiin.TextBoxInput("Enter Text", 400, 200, 200, 50)
 
     # initialize fonts
-    font_title     = pygame.font.SysFont('Arial', 50)
+    font_title = pygame.font.SysFont('Arial', 50)
+    font_input = pygame.font.SysFont('Arial', 30)   
 
     while running:
         mouse = pygame.mouse.get_pos()
@@ -439,6 +358,7 @@ def screen_menu_draw_lines(screen):
             if ev.type == pygame.QUIT:
                 pygame.quit()
             # checks if a mouse is clicked
+            text_in_radius.text_input(screen, mouse, ev)
             if ev.type == pygame.MOUSEBUTTONDOWN:
                 # button events
                 if button_back.get_state(mouse):
@@ -450,22 +370,37 @@ def screen_menu_draw_lines(screen):
         
         button_back.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font_title, "Back", WHITE)
         button_next.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font_title, "Next", WHITE)
+
+        text_in_radius.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font_input, WHITE)
         pygame.display.update()
     return info
 
 
 def screen_draw_lines(screen, info):
     global state_current
+
     screen.fill(WHITE)
-    running = True
+
+    toggles = {
+        "running" : True,
+        "render"  : True,
+    }
+
     radius = 500
-    while running:
-        running = commands(running)
+
+    while toggles["running"]:
+        # pygame event queue
+        for ev in pygame.event.get():
+            # window is closed
+            if ev.type == pygame.QUIT:
+                pygame.quit()
+            toggles = commands(ev, toggles, screen)
         # generate a random number representing a point on the edge of a circle
         randNum = random.random()*(2*math.pi)
         # convert the polar coordinates to rectangular to draw a line
         pygame.draw.line(screen, BLACK, (500, 500), ((radius*math.cos(randNum))+500, (radius*math.sin(randNum))+500))
-        pygame.display.update()
+        if toggles["render"]:
+            pygame.display.update()
     state_current = "MainMenu"
 
 
