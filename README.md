@@ -1,10 +1,14 @@
 # pygame-rand-draw
 A Python script that draws randomly using different methods using pygame
 
+Run draw.py with Python 3 installed
+
 NOTE: Requires a 1080p or above monitor to view correctly
 
 Author: Brayden Olsen
+
 Date Modified: 1/13/2022
+
 Version: 0.4.0
 
 
