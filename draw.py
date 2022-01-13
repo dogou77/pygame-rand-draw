@@ -24,8 +24,11 @@ def commands(event, toggles, screen):
 
     return toggles
 
+
+
 # main menu screen
 def screen_menu_main(screen):
+    # set the state_current to global so that it can change states
     global state_current
 
     running = True
@@ -86,6 +89,7 @@ def screen_menu_draw_pointer(screen):
         "overwrite": False,
         "borders"  : False,
     }
+
     # initializes a list that is supposed to contain multiple radio buttons so that two are not active at once
     radio_buttons = []
 
@@ -95,14 +99,14 @@ def screen_menu_draw_pointer(screen):
     font_instruct  = pygame.font.SysFont('Arial', 20)
 
     # initialize check boxes
-    check_box_sym_x     = pguiin.CheckBox(False, 300, 200, 100, 100, 10)
-    check_box_sym_y     = pguiin.CheckBox(False, 600, 200, 100, 100, 10)
-    check_box_overwrite = pguiin.CheckBox(False, 300, 600, 100, 100, 10)
-    check_box_borders   = pguiin.CheckBox(False, 600, 600, 100, 100, 10)
+    check_box_sym_x     = pguiin.CheckBox(350, 250, 100, 100, BUTTON_DARK, GREEN, 10, True)
+    check_box_sym_y     = pguiin.CheckBox(650, 250, 100, 100, BUTTON_DARK, GREEN, 10, True)
+    check_box_overwrite = pguiin.CheckBox(350, 650, 100, 100, BUTTON_DARK, GREEN, 10, True)
+    check_box_borders   = pguiin.CheckBox(650, 650, 100, 100, BUTTON_DARK, GREEN, 10, True)
 
     # initialize radio buttons and add them to the radio_button list
-    radio_color_a = pguiin.RadioButton(False, 350, 450, 50, 10)
-    radio_color_b = pguiin.RadioButton(False, 650, 450, 50, 10)
+    radio_color_a = pguiin.RadioButton(350, 450, 50, 10, BUTTON_DARK, GREEN)
+    radio_color_b = pguiin.RadioButton(650, 450, 50, 10, BUTTON_DARK, GREEN)
     radio_buttons.append(radio_color_a)
     radio_buttons.append(radio_color_b)
 
@@ -111,10 +115,10 @@ def screen_menu_draw_pointer(screen):
     button_next = pguiin.Button(750, 900, 400, 100, BUTTON_DARK, font_label, "Next", WHITE, True)
 
     while running:
-        mouse = pygame.mouse.get_pos()
 
         # pygame event queue
         for ev in pygame.event.get():
+
             # window is closed
             if ev.type == pygame.QUIT:
                 pygame.quit()
@@ -127,33 +131,31 @@ def screen_menu_draw_pointer(screen):
                 state_current = "PointDraw"
                 running = False
             
-            # checks if a mouse is clicked
-            if ev.type == pygame.MOUSEBUTTONDOWN:
-                # toggles the check boxes if the mouse is in their area
-                check_box_sym_x.toggle(mouse)
-                check_box_sym_y.toggle(mouse)
-                check_box_overwrite.toggle(mouse)
-                check_box_borders.toggle(mouse)
+            # toggles the check boxes if the mouse is in their area
+            check_box_sym_x.toggle(ev)
+            check_box_sym_y.toggle(ev)
+            check_box_overwrite.toggle(ev)
+            check_box_borders.toggle(ev)
 
-                # toggles the radio button in the mouse is in their area, but untoggled ones that are already true
-                for radio in radio_buttons:
-                    radio.toggle(mouse)
+            # toggles the radio button in the mouse is in their area, but untoggled ones that are already true
+            for radio in radio_buttons:
+                    radio.toggle(ev)
                     if radio.state:
                         for rad in radio_buttons:
                             if rad != radio:
-                                rad.state = False
+                                rad.state = False               
 
         screen.fill(PURPLE)
 
         # render the check boxes
-        check_box_sym_x.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, GREEN)
-        check_box_sym_y.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, GREEN)
-        check_box_overwrite.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, GREEN)
-        check_box_borders.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, GREEN)
+        check_box_sym_x.render(screen)
+        check_box_sym_y.render(screen)
+        check_box_overwrite.render(screen)
+        check_box_borders.render(screen)
 
         # render the radio buttons
-        radio_color_a.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, GREEN)
-        radio_color_b.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, GREEN)
+        radio_color_a.render(screen)
+        radio_color_b.render(screen)
 
         # render the buttons
         button_back.render(screen)
@@ -179,6 +181,7 @@ def screen_menu_draw_pointer(screen):
     info["color_b"]   = radio_color_b.state
     info["overwrite"] = check_box_overwrite.state
     info["borders"]   = check_box_borders.state
+
     return info
 
 
@@ -324,7 +327,7 @@ def screen_draw_pointer(pixel, screen, info):
     
 
 
-def screen_menu_draw_lines(screen):
+def screen_menu_line_draw(screen):
     global state_current
 
     screen.fill(PURPLE)
@@ -338,16 +341,17 @@ def screen_menu_draw_lines(screen):
         "draw_to"   : "",
     }
 
+    # initialize fonts
+    font_title = pygame.font.SysFont('Arial', 50)
+    font_input = pygame.font.SysFont('Arial', 30)  
+    font_label = pygame.font.SysFont('Arial', 35) 
+
     # initialize back and forward buttons
-    button_back = pguiin.Button(50, 800, 400, 100)
-    button_next = pguiin.Button(550, 800, 400, 100)
+    button_back = pguiin.Button(250, 900, 400, 100, BUTTON_DARK, font_label, "Back", WHITE, True)
+    button_next = pguiin.Button(750, 900, 400, 100, BUTTON_DARK, font_label, "Next", WHITE, True)
 
     # initialize text boxes
     text_in_radius = pguiin.TextBoxInput("Enter Text", 400, 200, 200, 50)
-
-    # initialize fonts
-    font_title = pygame.font.SysFont('Arial', 50)
-    font_input = pygame.font.SysFont('Arial', 30)   
 
     while running:
         mouse = pygame.mouse.get_pos()
@@ -359,24 +363,24 @@ def screen_menu_draw_lines(screen):
                 pygame.quit()
             # checks if a mouse is clicked
             text_in_radius.text_input(screen, mouse, ev)
-            if ev.type == pygame.MOUSEBUTTONDOWN:
-                # button events
-                if button_back.get_state(mouse):
-                    state_current = "MainMenu"
-                    running = False
-                if button_next.get_state(mouse):
-                    state_current = "DrawLines"
-                    running = False
+            # button events
+            if button_back.get_state(ev):
+                state_current = "MainMenu"
+                running = False
+            if button_next.get_state(ev):
+                state_current = "LineDraw"
+                running = False
         
-        button_back.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font_title, "Back", WHITE)
-        button_next.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font_title, "Next", WHITE)
+        # render buttons
+        button_back.render(screen)
+        button_next.render(screen)
 
         text_in_radius.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font_input, WHITE)
         pygame.display.update()
     return info
 
 
-def screen_draw_lines(screen, info):
+def screen_line_draw(screen, info):
     global state_current
 
     screen.fill(WHITE)
@@ -438,7 +442,7 @@ while True:
         point_draw_info = screen_menu_draw_pointer(screen)
     if state_current == "PointDraw":
         pixel = screen_draw_pointer(pixel, screen, point_draw_info)
-    if state_current == "DrawLinesMenu":
-        line_draw_info = screen_menu_draw_lines(screen)
-    if state_current == "DrawLines":
-        screen_draw_lines(screen, line_draw_info)
+    if state_current == "LineDrawMenu":
+        line_draw_info = screen_menu_line_draw(screen)
+    if state_current == "LineDraw":
+        screen_line_draw(screen, line_draw_info)
