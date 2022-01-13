@@ -12,14 +12,15 @@ def draw_centered_text(screen, text_font, text_str, text_color, position_x, posi
     # renders the text at the center of the position provided
     screen.blit(text , (position_x - (text_size[0] / 2), position_y - (text_size[1] / 2)))
 
-def commands(event, toggles, screen):
+# keyboard commands for input in the drawing screens
+def commands(screen, event, toggles):
     if pygame.key.get_focused():
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_F12:
+            if event.key == pygame.K_F12: # take a screenshot
                 pygame.image.save(screen, "image.png")
-            if event.key == pygame.K_ESCAPE:
+            if event.key == pygame.K_ESCAPE: # exit to main menu
                 toggles["running"] = False
-            if event.key == pygame.K_SPACE:
+            if event.key == pygame.K_SPACE: # toggle rendering
                 toggles["render"] = not toggles["render"]
 
     return toggles
@@ -62,7 +63,7 @@ def screen_menu_main(screen):
         screen.fill(PURPLE)
 
         # renders the text
-        draw_centered_text(screen, font_title, "Random Drawer", WHITE, 500, 50)
+        draw_centered_text(screen, font_title, "Python Random Drawer", WHITE, 500, 50)
         draw_centered_text(screen, font_author, "By: Brayden Olsen", WHITE, 500, 100)
 
         # renders the buttons
@@ -301,7 +302,7 @@ def screen_draw_pointer(pixel, screen, info):
             # window close
             if ev.type == pygame.QUIT:
                 pygame.quit()
-            toggles = commands(ev, toggles, screen)
+            toggles = commands(screen, ev, toggles)
 
         # if the pixel the pointer is over is not white, then make the color white
         if info["overwrite"]:
@@ -360,6 +361,7 @@ def screen_menu_circle_line_draw(screen):
     text_in_to_y   = pguiin.TextBoxInput(790, 450, 60, 50, BUTTON_DARK, font_input, WHITE, "0", True, 5, True)
 
     while running:
+
         screen.fill(PURPLE)
 
         # pygame event queue
@@ -413,6 +415,7 @@ def screen_menu_circle_line_draw(screen):
 
         pygame.display.update()
 
+    # update info and return it
     info["radius"]    = text_in_radius.get_int()
     info["draw_from"] = [text_in_from_x.get_int(), text_in_from_y.get_int()]
     info["draw_to"]   = [text_in_to_x.get_int(), text_in_to_y.get_int()]
@@ -430,7 +433,12 @@ def screen_circle_line_draw(screen, info):
         "render"  : True,
     }
 
+    # set local variables equal to their info counterparts
     radius = info["radius"]
+    from_x = info["draw_from"][0]
+    from_y = info["draw_from"][1]
+    to_x   = info["draw_to"][0]
+    to_y   = info["draw_to"][0]
 
     while toggles["running"]:
         # pygame event queue
@@ -438,14 +446,19 @@ def screen_circle_line_draw(screen, info):
             # window is closed
             if ev.type == pygame.QUIT:
                 pygame.quit()
-            toggles = commands(ev, toggles, screen)
+            toggles = commands(screen, ev, toggles)
+        
         # generate a random number representing a point on the edge of a circle
         randNum = random.random()*(2*math.pi)
+
         # convert the polar coordinates to rectangular to draw a line
-        pygame.draw.line(screen, BLACK, (500 + info["draw_from"][0], 500 - info["draw_from"][1]), ((radius * math.cos(randNum)) + 500 + info["draw_to"][0], (radius * math.sin(randNum)) + 500 - info["draw_to"][1]))
+        pygame.draw.line(screen, BLACK, (500 + from_x, 500 - from_y), ((radius * math.cos(randNum)) + 500 + to_x, (radius * math.sin(randNum)) + 500 - to_y))
+
+        # display the changes if render is enabled
         if toggles["render"]:
             pygame.display.update()
     state_current = "MainMenu"
+
 
 
 
@@ -470,8 +483,13 @@ pixel = [500, 500]
 
 # opens up a window
 screen = pygame.display.set_mode(RES)
+
+# sets the logo and caption for the pygame window
+icon = pygame.image.load("icon32x32.png")
+pygame.display.set_icon(icon)
+pygame.display.set_caption("Python Random Drawer")
+
 clock = pygame.time.Clock()
-symtest = [False, False]
 
 # main loop
 while True:

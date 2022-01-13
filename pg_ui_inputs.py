@@ -227,6 +227,7 @@ class TextBoxInput:
             elif self.text_size[0] < self.size[0] - (self.margin * 2): # regulates text length based on the size of the text box
                 self.text += event.unicode
 
+    # returns true or false based on if the text being input can be converted into an int
     def is_int(self):
         try:
             output = int(self.text)
@@ -236,6 +237,7 @@ class TextBoxInput:
         if isinstance(output, int):
             return True
 
+    # returns an int if the text being input can be converted into one
     def get_int(self):
         intout = 0
         try:
