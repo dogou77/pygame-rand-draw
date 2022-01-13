@@ -35,7 +35,8 @@ def screen_menu_main(screen):
 
     # fonts
     font_button = pygame.font.SysFont('Arial', 35)
-    font_menu   = pygame.font.SysFont('Arial', 50)
+    font_title  = pygame.font.SysFont('Arial', 50)
+    font_author = pygame.font.SysFont('Arial', 20)
 
     # buttons
     button_draw_point = pguiin.Button(500, 200, 500, 100, BUTTON_DARK, font_button, "Pointer Drawer", WHITE, True)
@@ -54,14 +55,15 @@ def screen_menu_main(screen):
                 state_current = "PointDrawMenu"
                 running = False
             if button_draw_lines.get_state(ev):
-                state_current = "LineDrawMenu"
+                state_current = "CircleLineDrawMenu"
                 running = False
 
         # fills the screen with a color
         screen.fill(PURPLE)
 
         # renders the text
-        draw_centered_text(screen, font_menu, "Title", WHITE, 500, 50)
+        draw_centered_text(screen, font_title, "Random Drawer", WHITE, 500, 50)
+        draw_centered_text(screen, font_author, "By: Brayden Olsen", WHITE, 500, 100)
 
         # renders the buttons
         button_draw_point.render(screen)
@@ -163,7 +165,7 @@ def screen_menu_draw_pointer(screen):
 
         # draw all the text
         draw_centered_text(screen, font_title, "Point Drawer Options", WHITE, 500, 50)
-        draw_centered_text(screen, font_instruct, "Commands: Escape - Exits | F12 - Saves Image | Space - Toggle Render", WHITE, 500, 100)
+        draw_centered_text(screen, font_instruct, "ESC - Exits | F12 - Saves Image | SPACE - Toggle Render", WHITE, 500, 100)
         draw_centered_text(screen, font_label, "X-Axis Symmetry", WHITE, 350, 150)
         draw_centered_text(screen, font_label, "Y-Axis Symmetry", WHITE, 650, 150)
         draw_centered_text(screen, font_label, "Color Mode A", WHITE, 350, 350)
@@ -327,60 +329,98 @@ def screen_draw_pointer(pixel, screen, info):
     
 
 
-def screen_menu_line_draw(screen):
+# options screen for circular line draw
+def screen_menu_circle_line_draw(screen):
     global state_current
-
-    screen.fill(PURPLE)
 
     running = True
 
     # info is the variable that is returned
     info = {
-        "radius"    : "",
-        "draw_from" : "",
-        "draw_to"   : "",
+        "radius"    : 100,
+        "draw_from" : [0, 0],
+        "draw_to"   : [0, 0],
     }
 
     # initialize fonts
     font_title = pygame.font.SysFont('Arial', 50)
     font_input = pygame.font.SysFont('Arial', 30)  
     font_label = pygame.font.SysFont('Arial', 35) 
+    font_error = pygame.font.SysFont('Arial', 20)
 
     # initialize back and forward buttons
     button_back = pguiin.Button(250, 900, 400, 100, BUTTON_DARK, font_label, "Back", WHITE, True)
     button_next = pguiin.Button(750, 900, 400, 100, BUTTON_DARK, font_label, "Next", WHITE, True)
 
     # initialize text boxes
-    text_in_radius = pguiin.TextBoxInput("Enter Text", 400, 200, 200, 50)
+    text_in_radius = pguiin.TextBoxInput(250, 250, 50, 50, BUTTON_DARK, font_input, WHITE, "500", True, 5, True)
+    text_in_from_x = pguiin.TextBoxInput(710, 250, 60, 50, BUTTON_DARK, font_input, WHITE, "0", True, 5, True)
+    text_in_from_y = pguiin.TextBoxInput(790, 250, 60, 50, BUTTON_DARK, font_input, WHITE, "0", True, 5, True)
+    text_in_to_x   = pguiin.TextBoxInput(710, 450, 60, 50, BUTTON_DARK, font_input, WHITE, "0", True, 5, True)
+    text_in_to_y   = pguiin.TextBoxInput(790, 450, 60, 50, BUTTON_DARK, font_input, WHITE, "0", True, 5, True)
 
     while running:
-        mouse = pygame.mouse.get_pos()
+        screen.fill(PURPLE)
 
         # pygame event queue
         for ev in pygame.event.get():
             # window is closed
             if ev.type == pygame.QUIT:
                 pygame.quit()
-            # checks if a mouse is clicked
-            text_in_radius.text_input(screen, mouse, ev)
+            # text input events
+            text_in_radius.text_input(ev)
+            text_in_from_x.text_input(ev)
+            text_in_from_y.text_input(ev)
+            text_in_to_x.text_input(ev)
+            text_in_to_y.text_input(ev)
+
             # button events
             if button_back.get_state(ev):
                 state_current = "MainMenu"
                 running = False
             if button_next.get_state(ev):
-                state_current = "LineDraw"
+                state_current = "CircleLineDraw"
                 running = False
         
         # render buttons
         button_back.render(screen)
-        button_next.render(screen)
 
-        text_in_radius.render(screen, mouse, BUTTON_LIGHT, BUTTON_DARK, font_input, WHITE)
+        # render text boxes
+        text_in_radius.render(screen)
+        text_in_from_x.render(screen)
+        text_in_from_y.render(screen)
+        text_in_to_x.render(screen)
+        text_in_to_y.render(screen)
+
+        # render text
+        draw_centered_text(screen, font_title, "Circular Line Drawer Options", WHITE, 500, 50)
+        draw_centered_text(screen, font_error, "ESC - Exits | F12 - Saves Image | SPACE - Toggle Render", WHITE, 500, 100)
+        draw_centered_text(screen, font_label, "Radius", WHITE, 250, 200)
+        draw_centered_text(screen, font_label, "From", WHITE, 750, 150)
+        draw_centered_text(screen, font_label, "X       Y", WHITE, 750, 200)
+        draw_centered_text(screen, font_label, "To", WHITE, 750, 350)
+        draw_centered_text(screen, font_label, "X       Y", WHITE, 750, 400)
+
+        # error message conditionals
+        if not text_in_radius.is_int():
+            draw_centered_text(screen, font_error, "Enter a number", RED, 250, 300)
+        if not text_in_from_x.is_int() or not text_in_from_y.is_int():
+            draw_centered_text(screen, font_error, "Enter a number", RED, 750, 300)
+        if not text_in_to_x.is_int() or not text_in_to_y.is_int():
+            draw_centered_text(screen, font_error, "Enter a number", RED, 750, 500)
+        else:
+            button_next.render(screen)
+
         pygame.display.update()
+
+    info["radius"]    = text_in_radius.get_int()
+    info["draw_from"] = [text_in_from_x.get_int(), text_in_from_y.get_int()]
+    info["draw_to"]   = [text_in_to_x.get_int(), text_in_to_y.get_int()]
+
     return info
 
 
-def screen_line_draw(screen, info):
+def screen_circle_line_draw(screen, info):
     global state_current
 
     screen.fill(WHITE)
@@ -390,7 +430,7 @@ def screen_line_draw(screen, info):
         "render"  : True,
     }
 
-    radius = 500
+    radius = info["radius"]
 
     while toggles["running"]:
         # pygame event queue
@@ -402,7 +442,7 @@ def screen_line_draw(screen, info):
         # generate a random number representing a point on the edge of a circle
         randNum = random.random()*(2*math.pi)
         # convert the polar coordinates to rectangular to draw a line
-        pygame.draw.line(screen, BLACK, (500, 500), ((radius*math.cos(randNum))+500, (radius*math.sin(randNum))+500))
+        pygame.draw.line(screen, BLACK, (500 + info["draw_from"][0], 500 - info["draw_from"][1]), ((radius * math.cos(randNum)) + 500 + info["draw_to"][0], (radius * math.sin(randNum)) + 500 - info["draw_to"][1]))
         if toggles["render"]:
             pygame.display.update()
     state_current = "MainMenu"
@@ -435,14 +475,13 @@ symtest = [False, False]
 
 # main loop
 while True:
-    #clock.tick(60)
     if state_current == "MainMenu":
         screen_menu_main(screen)
     if state_current == "PointDrawMenu":
         point_draw_info = screen_menu_draw_pointer(screen)
     if state_current == "PointDraw":
         pixel = screen_draw_pointer(pixel, screen, point_draw_info)
-    if state_current == "LineDrawMenu":
-        line_draw_info = screen_menu_line_draw(screen)
-    if state_current == "LineDraw":
-        screen_line_draw(screen, line_draw_info)
+    if state_current == "CircleLineDrawMenu":
+        line_draw_info = screen_menu_circle_line_draw(screen)
+    if state_current == "CircleLineDraw":
+        screen_circle_line_draw(screen, line_draw_info)
