@@ -3,7 +3,7 @@ Author: Brayden Olsen
 
 Date Modified: 1/13/2022
 
-Version: 1.0
+Version: 1.1.0
 
 
 A Python script that draws randomly using different methods using pygame

@@ -152,31 +152,38 @@ def screen_menu_draw_pointer(screen):
         "color_b"  : False,
         "overwrite": False,
         "borders"  : False,
+        "is_image" : False,
+        "image_str": "",
     }
 
     # initializes a list that is supposed to contain multiple radio buttons so that two are not active at once
     radio_buttons = []
 
     # initialize fonts
-    font_title     = pygame.font.SysFont('Arial', 50)
-    font_label = pygame.font.SysFont('Arial', 35)
-    font_instruct  = pygame.font.SysFont('Arial', 20)
+    font_title    = pygame.font.SysFont('Arial', 50)
+    font_input    = pygame.font.SysFont('Arial', 30)
+    font_label    = pygame.font.SysFont('Arial', 35)
+    font_instruct = pygame.font.SysFont('Arial', 20)
 
     # initialize check boxes
-    check_box_sym_x     = pguiin.CheckBox(350, 250, 100, 100, BUTTON_DARK, GREEN, 10, True)
-    check_box_sym_y     = pguiin.CheckBox(650, 250, 100, 100, BUTTON_DARK, GREEN, 10, True)
-    check_box_overwrite = pguiin.CheckBox(350, 650, 100, 100, BUTTON_DARK, GREEN, 10, True)
-    check_box_borders   = pguiin.CheckBox(650, 650, 100, 100, BUTTON_DARK, GREEN, 10, True)
+    check_box_sym_x     = pguiin.CheckBox(125, 250, 100, 100, BUTTON_DARK, GREEN, 10, True)
+    check_box_sym_y     = pguiin.CheckBox(375, 250, 100, 100, BUTTON_DARK, GREEN, 10, True)
+    check_box_overwrite = pguiin.CheckBox(125, 650, 100, 100, BUTTON_DARK, GREEN, 10, True)
+    check_box_borders   = pguiin.CheckBox(375, 650, 100, 100, BUTTON_DARK, GREEN, 10, True)
+    check_box_image     = pguiin.CheckBox(750, 250, 100, 100, BUTTON_DARK, GREEN, 10, True)
 
     # initialize radio buttons and add them to the radio_button list
-    radio_color_a = pguiin.RadioButton(350, 450, 50, 10, BUTTON_DARK, GREEN)
-    radio_color_b = pguiin.RadioButton(650, 450, 50, 10, BUTTON_DARK, GREEN)
+    radio_color_a = pguiin.RadioButton(125, 450, 50, 10, BUTTON_DARK, GREEN)
+    radio_color_b = pguiin.RadioButton(375, 450, 50, 10, BUTTON_DARK, GREEN)
     radio_buttons.append(radio_color_a)
     radio_buttons.append(radio_color_b)
 
     # initalize back and forward buttons
     button_back = pguiin.Button(250, 900, 400, 100, BUTTON_DARK, font_label, "Back", WHITE, True)
     button_next = pguiin.Button(750, 900, 400, 100, BUTTON_DARK, font_label, "Next", WHITE, True)
+
+    # initialize text boxes
+    text_in_image = pguiin.TextBoxInput(750, 400, 250, 50, BUTTON_DARK, font_input, WHITE, "Enter File Name", False, 5, True)
 
     while running:
 
@@ -187,6 +194,9 @@ def screen_menu_draw_pointer(screen):
             if ev.type == pygame.QUIT:
                 pygame.quit()
             
+            # gets the input from text boxes
+            text_in_image.text_input(ev)
+
             # gets the states of the back and next buttons then sets a state and exits the loop
             if button_back.get_state(ev):
                 state_current = "MainMenu"
@@ -200,6 +210,7 @@ def screen_menu_draw_pointer(screen):
             check_box_sym_y.toggle(ev)
             check_box_overwrite.toggle(ev)
             check_box_borders.toggle(ev)
+            check_box_image.toggle(ev)
 
             # toggles the radio button in the mouse is in their area, but untoggled ones that are already true
             for radio in radio_buttons:
@@ -216,6 +227,7 @@ def screen_menu_draw_pointer(screen):
         check_box_sym_y.render(screen)
         check_box_overwrite.render(screen)
         check_box_borders.render(screen)
+        check_box_image.render(screen)
 
         # render the radio buttons
         radio_color_a.render(screen)
@@ -225,15 +237,22 @@ def screen_menu_draw_pointer(screen):
         button_back.render(screen)
         button_next.render(screen)
 
+        # render text boxes
+        if check_box_image.state:
+            text_in_image.render(screen)
+
         # draw all the text
         draw_centered_text(screen, font_title, "Point Drawer Options", WHITE, 500, 50)
         draw_centered_text(screen, font_instruct, "ESC - Exits | F12 - Saves Image | SPACE - Toggle Render", WHITE, 500, 100)
-        draw_centered_text(screen, font_label, "X-Axis Symmetry", WHITE, 350, 150)
-        draw_centered_text(screen, font_label, "Y-Axis Symmetry", WHITE, 650, 150)
-        draw_centered_text(screen, font_label, "Color Mode A", WHITE, 350, 350)
-        draw_centered_text(screen, font_label, "Color Mode B", WHITE, 650, 350)
-        draw_centered_text(screen, font_label, "Overwrite", WHITE, 350, 550)
-        draw_centered_text(screen, font_label, "Borders", WHITE, 650, 550)
+        draw_centered_text(screen, font_label, "X-Axis", WHITE, 125, 140)
+        draw_centered_text(screen, font_label, "Symmetry", WHITE, 125, 170)
+        draw_centered_text(screen, font_label, "Y-Axis", WHITE, 375, 140)
+        draw_centered_text(screen, font_label, "Symmetry", WHITE, 375, 170)
+        draw_centered_text(screen, font_label, "Color Mode A", WHITE, 125, 350)
+        draw_centered_text(screen, font_label, "Color Mode B", WHITE, 375, 350)
+        draw_centered_text(screen, font_label, "Overwrite", WHITE, 125, 550)
+        draw_centered_text(screen, font_label, "Borders", WHITE, 375, 550)
+        draw_centered_text(screen, font_label, "Import Image", WHITE, 750, 150)
 
         # updates the frames of the game
         pygame.display.update()
@@ -245,6 +264,8 @@ def screen_menu_draw_pointer(screen):
     info["color_b"]   = radio_color_b.state
     info["overwrite"] = check_box_overwrite.state
     info["borders"]   = check_box_borders.state
+    info["is_image"]  = check_box_image.state
+    info["image_str"] = text_in_image.text
 
     return info
 
@@ -263,6 +284,11 @@ def screen_draw_pointer(pixel, screen, info):
     }
 
     screen.fill(WHITE)
+    
+    # TODO: add try except statement
+    if info["is_image"]:
+        background = pygame.image.load(info["image_str"])
+        screen.blit(background, (0, 0))
 
     while toggles["running"]:
         # if the user selected color mode a in the previous screen
