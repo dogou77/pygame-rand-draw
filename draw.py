@@ -91,9 +91,10 @@ def screen_menu_main(screen):
     font_author = pygame.font.SysFont('Arial', 20)
 
     # buttons
-    button_draw_point = pguiin.Button(500, 200, 500, 100, BUTTON_DARK, font_button, "Pointer Drawer", WHITE, True)
-    button_draw_lines = pguiin.Button(500, 320, 500, 100, BUTTON_DARK, font_button, "Circular Line Drawer", WHITE, True)
-    button_quit       = pguiin.Button(500, 900, 500, 100, BUTTON_DARK, font_button, "Quit", WHITE, True)
+    button_draw_point        = pguiin.Button(500, 200, 500, 100, BUTTON_DARK, font_button, "Pointer Drawer", WHITE, True)
+    button_draw_circle_lines = pguiin.Button(500, 320, 500, 100, BUTTON_DARK, font_button, "Circular Line Drawer", WHITE, True)
+    button_draw_lines        = pguiin.Button(500, 440, 500, 100, BUTTON_DARK, font_button, "Line Drawer", WHITE, True)
+    button_quit              = pguiin.Button(500, 900, 500, 100, BUTTON_DARK, font_button, "Quit", WHITE, True)
 
     # pygame event queue
     while running:
@@ -106,8 +107,11 @@ def screen_menu_main(screen):
             if button_draw_point.get_state(ev):
                 state_current = "PointDrawMenu"
                 running = False
-            if button_draw_lines.get_state(ev):
+            if button_draw_circle_lines.get_state(ev):
                 state_current = "CircleLineDrawMenu"
+                running = False
+            if button_draw_lines.get_state(ev):
+                state_current = "LineDrawMenu"
                 running = False
 
         # fills the screen with a color
@@ -119,6 +123,7 @@ def screen_menu_main(screen):
 
         # renders the buttons
         button_draw_point.render(screen)
+        button_draw_circle_lines.render(screen)
         button_draw_lines.render(screen)
         button_quit.render(screen)
 
@@ -455,6 +460,7 @@ def screen_menu_circle_line_draw(screen):
     return info
 
 
+
 def screen_circle_line_draw(screen, info):
     global state_current
 
@@ -479,7 +485,7 @@ def screen_circle_line_draw(screen, info):
             color = randomize_color_a(color[0], color[1], color[2])
         if info["color_b"]:
             color = randomize_color_b()
-            
+
         # pygame event queue
         for ev in pygame.event.get():
             # window is closed
@@ -498,6 +504,123 @@ def screen_circle_line_draw(screen, info):
             pygame.display.update()
     state_current = "MainMenu"
 
+
+
+def screen_menu_line_draw(screen):
+    global state_current
+    running = True
+
+    # info is the variable that is returned
+    info = {
+        "color_a"   : False,
+        "color_b"   : False,
+    }
+
+    radio_buttons = []
+
+    # initialize fonts
+    font_title    = pygame.font.SysFont('Arial', 50)
+    font_input    = pygame.font.SysFont('Arial', 30)  
+    font_label    = pygame.font.SysFont('Arial', 35)
+    font_commands = pygame.font.SysFont('Arial', 20)
+
+    # initialize back and forward buttons
+    button_back = pguiin.Button(250, 900, 400, 100, BUTTON_DARK, font_label, "Back", WHITE, True)
+    button_next = pguiin.Button(750, 900, 400, 100, BUTTON_DARK, font_label, "Next", WHITE, True)
+
+    # initialize radio buttons and add them to the radio_button list
+    radio_color_a = pguiin.RadioButton(350, 250, 50, 10, BUTTON_DARK, GREEN)
+    radio_color_b = pguiin.RadioButton(650, 250, 50, 10, BUTTON_DARK, GREEN)
+    radio_buttons.append(radio_color_a)
+    radio_buttons.append(radio_color_b)
+
+    while running:
+
+        screen.fill(PURPLE)
+
+        # pygame event queue
+        for ev in pygame.event.get():
+            # window is closed
+            if ev.type == pygame.QUIT:
+                pygame.quit()
+
+            # button events
+            if button_back.get_state(ev):
+                state_current = "MainMenu"
+                running = False
+            if button_next.get_state(ev):
+                state_current = "LineDraw"
+                running = False
+        
+            # toggles the radio button in the mouse is in their area, but untoggled ones that are already true
+            for radio in radio_buttons:
+                radio.toggle(ev)
+                if radio.state:
+                    for rad in radio_buttons:
+                        if rad != radio:
+                            rad.state = False
+        
+        # render buttons
+        button_back.render(screen)
+        button_next.render(screen)
+
+        # render radio buttons
+        radio_color_a.render(screen)
+        radio_color_b.render(screen)
+
+        # render text
+        draw_centered_text(screen, font_title, "Line Drawer Options", WHITE, 500, 50)
+        draw_centered_text(screen, font_commands, "ESC - Exits | F12 - Saves Image | SPACE - Toggle Render", WHITE, 500, 100)
+        draw_centered_text(screen, font_label, "Color Mode A", WHITE, 350, 150)
+        draw_centered_text(screen, font_label, "Color Mode B", WHITE, 650, 150)
+
+        pygame.display.update()
+
+    info["color_a"] = radio_color_a.state
+    info["color_b"] = radio_color_b.state
+
+    return info
+
+
+
+def screen_line_draw(screen, info):
+    global state_current
+
+    screen.fill(WHITE)
+
+    toggles = {
+        "running" : True,
+        "render"  : True,
+    }
+
+    color = (0, 0, 0)
+
+    while toggles["running"]:
+        if info["color_a"]:
+            color = randomize_color_a(color[0], color[1], color[2])
+        if info["color_b"]:
+            color = randomize_color_b()
+
+        # pygame event queue
+        for ev in pygame.event.get():
+            # window is closed
+            if ev.type == pygame.QUIT:
+                pygame.quit()
+            toggles = commands(screen, ev, toggles)
+        
+        # generate a random number 
+        rand_from_x = random.randrange(-100, 1100)
+        rand_from_y = random.randrange(-100, 1100)
+        rand_to_x   = random.randrange(-100, 1100)
+        rand_to_y   = random.randrange(-100, 1100)
+
+        # convert the polar coordinates to rectangular to draw a line
+        pygame.draw.line(screen, color, (rand_from_x, rand_from_y), (rand_to_x, rand_to_y))
+
+        # display the changes if render is enabled
+        if toggles["render"]:
+            pygame.display.update()
+    state_current = "MainMenu"
 
 
 
@@ -539,6 +662,10 @@ while True:
     if state_current == "PointDraw":
         pixel = screen_draw_pointer(pixel, screen, point_draw_info)
     if state_current == "CircleLineDrawMenu":
-        line_draw_info = screen_menu_circle_line_draw(screen)
+        circle_line_draw_info = screen_menu_circle_line_draw(screen)
     if state_current == "CircleLineDraw":
-        screen_circle_line_draw(screen, line_draw_info)
+        screen_circle_line_draw(screen, circle_line_draw_info)
+    if state_current == "LineDrawMenu":
+        line_draw_info = screen_menu_line_draw(screen)
+    if state_current == "LineDraw":
+        screen_line_draw(screen, line_draw_info)
