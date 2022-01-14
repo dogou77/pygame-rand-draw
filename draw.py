@@ -277,6 +277,7 @@ def screen_draw_pointer(pixel, screen, info):
 
     # set default color to black
     color = (0, 0, 0)
+    image_ok = True
 
     toggles = {
         "running" : True,
@@ -287,8 +288,13 @@ def screen_draw_pointer(pixel, screen, info):
     
     # TODO: add try except statement
     if info["is_image"]:
-        background = pygame.image.load(info["image_str"])
-        screen.blit(background, (0, 0))
+        try:
+            background = pygame.image.load(info["image_str"])
+        except:
+            image_ok = False
+
+        if image_ok:
+            screen.blit(background, (0, 0))
 
     while toggles["running"]:
         # if the user selected color mode a in the previous screen
