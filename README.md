@@ -38,6 +38,8 @@ Method 1 - Draw Point
 
     Option 6 - Borders:         Constrains the pointer to the pygame window so it always stays in view
 
+    Option 7 - Import Image:    Enables you to input the filename of an image and sets the background of the drawing to that image
+
   
   There are also keyboard commands while you are in the drawing screen
 
@@ -56,11 +58,63 @@ Method 2 - Draw Circular Lines
 
   Options
 
-    Option 1 - Radius:   A text input that changes the radius of the ring that the lines are going to
+    Option 1 - Radius:       A text input that changes the radius of the ring that the lines are going to
 
-    Option 2 - From X/Y: Determines where the origin of the lines is
+    Option 2 - From X/Y:     Determines where the origin of the lines is
 
-    Option 3 - To X/Y:   Determines where the center of the ring that the lines are going to is
+    Option 3 - To X/Y:       Determines where the center of the ring that the lines are going to is
+
+    Option 4 - Color Mode A: Enables color for the lines, each new line a random RGB value will be incremented or decremented
+
+    Option 5 - Color Mode B: Enables color for the lines, each new line a random color value will be chosen
+
+    
+  Keyboard Commands
+
+    There are also keyboard commands while you are in the drawing screen
+
+    Escape: Returns to Main Menu
+
+    Space:  Toggles rendering, when not being rendered the drawing process speeds up
+
+    F12:    Captures an image named image.png to the script directory. Overwrites the previous image.png
+
+
+
+Method 3 - Draw Lines
+
+  This method of drawing draws out lines from a random point to another random point
+  
+
+  Options
+
+    Option 1 - Color Mode A: Enables color for the lines, each new line a random RGB value will be incremented or decremented
+
+    Option 2 - Color Mode B: Enables color for the lines, each new line a random color value will be chosen
+
+    
+  Keyboard Commands
+
+    There are also keyboard commands while you are in the drawing screen
+
+    Escape: Returns to Main Menu
+
+    Space:  Toggles rendering, when not being rendered the drawing process speeds up
+
+    F12:    Captures an image named image.png to the script directory. Overwrites the previous image.png
+
+
+
+Method 4 - Draw Rectangles
+
+  This method of drawing draws out lines from a central point to a ring
+  
+
+  Options
+
+    Option 1 - Color Mode A: Enables color for the rectangles, each new rectangle a random RGB value will be incremented or decremented
+
+    Option 2 - Color Mode B: Enables color for the rectangles, each new rectangle a random color value will be chosen
 
     
   Keyboard Commands
