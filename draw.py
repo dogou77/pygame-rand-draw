@@ -25,6 +25,57 @@ def commands(screen, event, toggles):
 
     return toggles
 
+def randomize_color_a(r, g, b):
+    # generate a random number from 0 to 2, this selects what rgb value is going to be modified
+    color_rand = random.randrange(0, 3, 1)
+    # generate a random number from 0 to 1, this selects if the selected rgb value is going to be incremented or decremented
+    color_up_down = random.randrange(0, 2, 1)
+
+    match color_rand:
+        # r
+        case 0:
+            match color_up_down:
+                case 0:
+                    r += 1
+                    if r >= 255:
+                        r -= 1
+                case 1:
+                    r -= 1
+                    if r <= 1:
+                        r += 1
+        # g
+        case 1:
+            match color_up_down:
+                case 0:
+                    g += 1
+                    if g >= 255:
+                        g -= 1
+                case 1:
+                    g -= 1
+                    if g <= 0:
+                        g += 1
+        # b
+        case 2:
+            match color_up_down:
+                case 0:
+                    b += 1
+                    if b >= 255:
+                         b -= 1
+                case 1:
+                    b -= 1
+                    if b <= 1:
+                        b += 1
+    color = (r, g, b)
+    return color
+
+def randomize_color_b():
+    # randomizes all color values and sets them equal to color
+    rand_r = random.randrange(1, 255, 1)
+    rand_g = random.randrange(1, 255, 1)
+    rand_b = random.randrange(1, 255, 1)
+    color = (rand_r, rand_g, rand_b)
+    return color
+
 
 
 # main menu screen
@@ -41,7 +92,7 @@ def screen_menu_main(screen):
 
     # buttons
     button_draw_point = pguiin.Button(500, 200, 500, 100, BUTTON_DARK, font_button, "Pointer Drawer", WHITE, True)
-    button_draw_lines = pguiin.Button(500, 320, 500, 100, BUTTON_DARK, font_button, "Line Drawer", WHITE, True)
+    button_draw_lines = pguiin.Button(500, 320, 500, 100, BUTTON_DARK, font_button, "Circular Line Drawer", WHITE, True)
     button_quit       = pguiin.Button(500, 900, 500, 100, BUTTON_DARK, font_button, "Quit", WHITE, True)
 
     # pygame event queue
@@ -194,69 +245,23 @@ def screen_draw_pointer(pixel, screen, info):
     global state_current
 
     # set default color to black
-    color = BLACK
-    screen.fill(WHITE)
-
-    # set default rgb colors to gray for color mode a usage
-    r = 125
-    g = 125
-    b = 125
+    color = (0, 0, 0)
 
     toggles = {
         "running" : True,
         "render"  : True,
     }
 
+    screen.fill(WHITE)
+
     while toggles["running"]:
         # if the user selected color mode a in the previous screen
         if info["color_a"]:
-            # generate a random number from 0 to 2, this selects what rgb value is going to be modified
-            color_rand = random.randrange(0, 3, 1)
-            # generate a random number from 0 to 1, this selects if the selected rgb value is going to be incremented or decremented
-            color_up_down = random.randrange(0, 2, 1)
-            color = (r, g, b)
-            match color_rand:
-                # r
-                case 0:
-                    match color_up_down:
-                        case 0:
-                            r += 1
-                            if r >= 255:
-                                r -= 1
-                        case 1:
-                            r -= 1
-                            if r <= 1:
-                                r += 1
-                # g
-                case 1:
-                    match color_up_down:
-                        case 0:
-                            g += 1
-                            if g >= 255:
-                                g -= 1
-                        case 1:
-                            g -= 1
-                            if g <= 0:
-                                g += 1
-                # b
-                case 2:
-                    match color_up_down:
-                        case 0:
-                            b += 1
-                            if b >= 255:
-                                b -= 1
-                        case 1:
-                            b -= 1
-                            if b <= 1:
-                                b += 1
-
+            color = randomize_color_a(color[0], color[1], color[2])
         # if the user selected color mode b
         elif info["color_b"]:
             # randomizes all color values and sets them equal to color
-            rand_r = random.randrange(1, 255, 1)
-            rand_g = random.randrange(1, 255, 1)
-            rand_b = random.randrange(1, 255, 1)
-            color = (rand_r, rand_g, rand_b)
+            color = randomize_color_b()
 
         # generate a random number
         rand_num = random.randrange(1, 10, 1)
@@ -341,24 +346,35 @@ def screen_menu_circle_line_draw(screen):
         "radius"    : 100,
         "draw_from" : [0, 0],
         "draw_to"   : [0, 0],
+        "color_a"   : False,
+        "color_b"   : False,
     }
 
+    radio_buttons = []
+
     # initialize fonts
-    font_title = pygame.font.SysFont('Arial', 50)
-    font_input = pygame.font.SysFont('Arial', 30)  
-    font_label = pygame.font.SysFont('Arial', 35) 
-    font_error = pygame.font.SysFont('Arial', 20)
+    font_title    = pygame.font.SysFont('Arial', 50)
+    font_input    = pygame.font.SysFont('Arial', 30)  
+    font_label    = pygame.font.SysFont('Arial', 35) 
+    font_error    = pygame.font.SysFont('Arial', 45)
+    font_commands = pygame.font.SysFont('Arial', 20)
 
     # initialize back and forward buttons
     button_back = pguiin.Button(250, 900, 400, 100, BUTTON_DARK, font_label, "Back", WHITE, True)
     button_next = pguiin.Button(750, 900, 400, 100, BUTTON_DARK, font_label, "Next", WHITE, True)
 
+    # initialize radio buttons and add them to the radio_button list
+    radio_color_a = pguiin.RadioButton(250, 250, 50, 10, BUTTON_DARK, GREEN)
+    radio_color_b = pguiin.RadioButton(500, 250, 50, 10, BUTTON_DARK, GREEN)
+    radio_buttons.append(radio_color_a)
+    radio_buttons.append(radio_color_b)
+
     # initialize text boxes
-    text_in_radius = pguiin.TextBoxInput(250, 250, 50, 50, BUTTON_DARK, font_input, WHITE, "500", True, 5, True)
-    text_in_from_x = pguiin.TextBoxInput(710, 250, 60, 50, BUTTON_DARK, font_input, WHITE, "0", True, 5, True)
-    text_in_from_y = pguiin.TextBoxInput(790, 250, 60, 50, BUTTON_DARK, font_input, WHITE, "0", True, 5, True)
-    text_in_to_x   = pguiin.TextBoxInput(710, 450, 60, 50, BUTTON_DARK, font_input, WHITE, "0", True, 5, True)
-    text_in_to_y   = pguiin.TextBoxInput(790, 450, 60, 50, BUTTON_DARK, font_input, WHITE, "0", True, 5, True)
+    text_in_radius = pguiin.TextBoxInput(750, 250, 50, 50, BUTTON_DARK, font_input, WHITE, "500", True, 5, True)
+    text_in_from_x = pguiin.TextBoxInput(710, 450, 60, 50, BUTTON_DARK, font_input, WHITE, "0", True, 5, True)
+    text_in_from_y = pguiin.TextBoxInput(790, 450, 60, 50, BUTTON_DARK, font_input, WHITE, "0", True, 5, True)
+    text_in_to_x   = pguiin.TextBoxInput(710, 650, 60, 50, BUTTON_DARK, font_input, WHITE, "0", True, 5, True)
+    text_in_to_y   = pguiin.TextBoxInput(790, 650, 60, 50, BUTTON_DARK, font_input, WHITE, "0", True, 5, True)
 
     while running:
 
@@ -383,9 +399,21 @@ def screen_menu_circle_line_draw(screen):
             if button_next.get_state(ev):
                 state_current = "CircleLineDraw"
                 running = False
+
+            # toggles the radio button in the mouse is in their area, but untoggled ones that are already true
+            for radio in radio_buttons:
+                radio.toggle(ev)
+                if radio.state:
+                    for rad in radio_buttons:
+                        if rad != radio:
+                            rad.state = False
         
         # render buttons
         button_back.render(screen)
+
+        # render radio buttons
+        radio_color_a.render(screen)
+        radio_color_b.render(screen)
 
         # render text boxes
         text_in_radius.render(screen)
@@ -396,20 +424,22 @@ def screen_menu_circle_line_draw(screen):
 
         # render text
         draw_centered_text(screen, font_title, "Circular Line Drawer Options", WHITE, 500, 50)
-        draw_centered_text(screen, font_error, "ESC - Exits | F12 - Saves Image | SPACE - Toggle Render", WHITE, 500, 100)
-        draw_centered_text(screen, font_label, "Radius", WHITE, 250, 200)
-        draw_centered_text(screen, font_label, "From", WHITE, 750, 150)
-        draw_centered_text(screen, font_label, "X       Y", WHITE, 750, 200)
-        draw_centered_text(screen, font_label, "To", WHITE, 750, 350)
+        draw_centered_text(screen, font_commands, "ESC - Exits | F12 - Saves Image | SPACE - Toggle Render", WHITE, 500, 100)
+        draw_centered_text(screen, font_label, "Color Mode A", WHITE, 250, 150)
+        draw_centered_text(screen, font_label, "Color Mode B", WHITE, 500, 150)
+        draw_centered_text(screen, font_label, "Radius", WHITE, 750, 150)
+        draw_centered_text(screen, font_label, "From", WHITE, 750, 350)
         draw_centered_text(screen, font_label, "X       Y", WHITE, 750, 400)
+        draw_centered_text(screen, font_label, "To", WHITE, 750, 550)
+        draw_centered_text(screen, font_label, "X       Y", WHITE, 750, 600)
 
         # error message conditionals
         if not text_in_radius.is_int():
-            draw_centered_text(screen, font_error, "Enter a number", RED, 250, 300)
-        if not text_in_from_x.is_int() or not text_in_from_y.is_int():
-            draw_centered_text(screen, font_error, "Enter a number", RED, 750, 300)
-        if not text_in_to_x.is_int() or not text_in_to_y.is_int():
-            draw_centered_text(screen, font_error, "Enter a number", RED, 750, 500)
+            draw_centered_text(screen, font_error, "Must enter numbers", RED, 750, 900)
+        elif not text_in_from_x.is_int() or not text_in_from_y.is_int():
+            draw_centered_text(screen, font_error, "Must enter numbers", RED, 750, 900)
+        elif not text_in_to_x.is_int() or not text_in_to_y.is_int():
+            draw_centered_text(screen, font_error, "Must enter numbers", RED, 750, 900)
         else:
             button_next.render(screen)
 
@@ -419,6 +449,8 @@ def screen_menu_circle_line_draw(screen):
     info["radius"]    = text_in_radius.get_int()
     info["draw_from"] = [text_in_from_x.get_int(), text_in_from_y.get_int()]
     info["draw_to"]   = [text_in_to_x.get_int(), text_in_to_y.get_int()]
+    info["color_a"]   = radio_color_a.state
+    info["color_b"]   = radio_color_b.state
 
     return info
 
@@ -433,6 +465,8 @@ def screen_circle_line_draw(screen, info):
         "render"  : True,
     }
 
+    color = (0, 0, 0)
+
     # set local variables equal to their info counterparts
     radius = info["radius"]
     from_x = info["draw_from"][0]
@@ -441,6 +475,11 @@ def screen_circle_line_draw(screen, info):
     to_y   = info["draw_to"][0]
 
     while toggles["running"]:
+        if info["color_a"]:
+            color = randomize_color_a(color[0], color[1], color[2])
+        if info["color_b"]:
+            color = randomize_color_b()
+            
         # pygame event queue
         for ev in pygame.event.get():
             # window is closed
@@ -452,7 +491,7 @@ def screen_circle_line_draw(screen, info):
         randNum = random.random()*(2*math.pi)
 
         # convert the polar coordinates to rectangular to draw a line
-        pygame.draw.line(screen, BLACK, (500 + from_x, 500 - from_y), ((radius * math.cos(randNum)) + 500 + to_x, (radius * math.sin(randNum)) + 500 - to_y))
+        pygame.draw.line(screen, color, (500 + from_x, 500 - from_y), ((radius * math.cos(randNum)) + 500 + to_x, (radius * math.sin(randNum)) + 500 - to_y))
 
         # display the changes if render is enabled
         if toggles["render"]:
