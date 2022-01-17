@@ -150,7 +150,6 @@ def screen_menu_draw_pointer(screen):
         "sym_y"    : False,
         "color_a"  : False,
         "color_b"  : False,
-        "overwrite": False,
         "borders"  : False,
         "is_image" : False,
         "image_str": "",
@@ -168,8 +167,7 @@ def screen_menu_draw_pointer(screen):
     # initialize check boxes
     check_box_sym_x     = pguiin.CheckBox(125, 250, 100, 100, BUTTON_DARK, GREEN, 10, True)
     check_box_sym_y     = pguiin.CheckBox(375, 250, 100, 100, BUTTON_DARK, GREEN, 10, True)
-    check_box_overwrite = pguiin.CheckBox(125, 650, 100, 100, BUTTON_DARK, GREEN, 10, True)
-    check_box_borders   = pguiin.CheckBox(375, 650, 100, 100, BUTTON_DARK, GREEN, 10, True)
+    check_box_borders   = pguiin.CheckBox(250, 650, 100, 100, BUTTON_DARK, GREEN, 10, True)
     check_box_image     = pguiin.CheckBox(750, 250, 100, 100, BUTTON_DARK, GREEN, 10, True)
 
     # initialize radio buttons and add them to the radio_button list
@@ -208,7 +206,6 @@ def screen_menu_draw_pointer(screen):
             # toggles the check boxes if the mouse is in their area
             check_box_sym_x.toggle(ev)
             check_box_sym_y.toggle(ev)
-            check_box_overwrite.toggle(ev)
             check_box_borders.toggle(ev)
             check_box_image.toggle(ev)
 
@@ -225,7 +222,6 @@ def screen_menu_draw_pointer(screen):
         # render the check boxes
         check_box_sym_x.render(screen)
         check_box_sym_y.render(screen)
-        check_box_overwrite.render(screen)
         check_box_borders.render(screen)
         check_box_image.render(screen)
 
@@ -250,8 +246,7 @@ def screen_menu_draw_pointer(screen):
         draw_centered_text(screen, font_label, "Symmetry", WHITE, 375, 170)
         draw_centered_text(screen, font_label, "Color Mode A", WHITE, 125, 350)
         draw_centered_text(screen, font_label, "Color Mode B", WHITE, 375, 350)
-        draw_centered_text(screen, font_label, "Overwrite", WHITE, 125, 550)
-        draw_centered_text(screen, font_label, "Borders", WHITE, 375, 550)
+        draw_centered_text(screen, font_label, "Borders", WHITE, 250, 550)
         draw_centered_text(screen, font_label, "Import Image", WHITE, 750, 150)
 
         # updates the frames of the game
@@ -262,7 +257,6 @@ def screen_menu_draw_pointer(screen):
     info["sym_y"]     = check_box_sym_y.state
     info["color_a"]   = radio_color_a.state
     info["color_b"]   = radio_color_b.state
-    info["overwrite"] = check_box_overwrite.state
     info["borders"]   = check_box_borders.state
     info["is_image"]  = check_box_image.state
     info["image_str"] = text_in_image.text
@@ -286,7 +280,7 @@ def screen_draw_pointer(pixel, screen, info):
 
     screen.fill(WHITE)
     
-    # TODO: add try except statement
+    # attempts to load the user defined image
     if info["is_image"]:
         try:
             background = pygame.image.load(info["image_str"])
@@ -306,31 +300,28 @@ def screen_draw_pointer(pixel, screen, info):
             color = randomize_color_b()
 
         # generate a random number
-        rand_num = random.randrange(1, 10, 1)
+        rand_num = random.randrange(0, 8, 1)
 
         # match random number to corresponding direction based on numpad
         match rand_num:
-            case 1:
+            case 0:
                 pixel[0] -= 1
+                pixel[1] -= 1
+            case 1:
                 pixel[1] -= 1
             case 2:
+                pixel[0] += 1
                 pixel[1] -= 1
             case 3:
-                pixel[0] += 1
-                pixel[1] -= 1
+                pixel[0] -= 1
             case 4:
-                pixel[0] -= 1
-            case 5:
-                pixel[0] += 0
-                pixel[1] += 0
-            case 6:
                 pixel[0] += 1
-            case 7: 
+            case 5: 
                 pixel[0] -= 1
                 pixel[1] += 1
-            case 8:
+            case 6:
                 pixel[1] += 1
-            case 9:
+            case 7:
                 pixel[0] += 1
                 pixel[1] += 1
 
@@ -350,11 +341,7 @@ def screen_draw_pointer(pixel, screen, info):
             if ev.type == pygame.QUIT:
                 pygame.quit()
             toggles = commands(screen, ev, toggles)
-
-        # if the pixel the pointer is over is not white, then make the color white
-        if info["overwrite"]:
-            if screen.get_at(([pixel[0], pixel[1]])) != (255, 255, 255):
-                color = WHITE
+        
         # draw a pixel
         screen.fill(color, ([pixel[0], pixel[1]], (1, 1)))
         # symmetry over x axis
